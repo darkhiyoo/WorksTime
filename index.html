@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WorksTime - Hours Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif, 'Arial Unicode MS';
+            background: linear-gradient(135deg, #2d1b69, #11071f);
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        body.rtl {
+            direction: rtl;
+        }
+
+        .container {
+            max-width: 500px;
+            margin: 0 auto;
+            background: rgba(45, 27, 105, 0.3);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(138, 43, 226, 0.3);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            color: #9d4edd;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        .controls-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .language-toggle, .shift-toggle {
+            display: flex;
+            gap: 5px;
+        }
+
+        .lang-btn, .shift-btn {
+            background: rgba(157, 78, 221, 0.2);
+            border: 2px solid rgba(157, 78, 221, 0.5);
+            color: #c77dff;
+            padding: 8px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            white-space: nowrap;
+        }
+
+        .lang-btn.active, .shift-btn.active {
+            background: #9d4edd;
+            color: white;
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+        }
+
+        .lang-btn:hover, .shift-btn:hover {
+            background: rgba(157, 78, 221, 0.4);
+        }
+
+        .work-schedule {
+            background: rgba(157, 78, 221, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            text-align: center;
+            border: 1px solid rgba(157, 78, 221, 0.3);
+        }
+
+        .work-schedule h3 {
+            color: #c77dff;
+            margin-bottom: 10px;
+        }
+
+        .schedule-time {
+            font-size: 1.2em;
+            color: #e0aaff;
+        }
+
+        .shift-info {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 0.9em;
+            color: #c77dff;
+        }
+
+        .input-group {
+            margin-bottom: 25px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #c77dff;
+            font-weight: 500;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid rgba(157, 78, 221, 0.5);
+            border-radius: 10px;
+            background: rgba(17, 7, 31, 0.7);
+            color: #ffffff;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #9d4edd;
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+        }
+
+        .time-inputs {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            /* Force LTR direction for time inputs regardless of body direction */
+            direction: ltr;
+        }
+
+        .time-select {
+            position: relative;
+        }
+
+        select {
+            width: 80px;
+            padding: 15px 10px;
+            border: 2px solid rgba(157, 78, 221, 0.5);
+            border-radius: 10px;
+            background: rgba(17, 7, 31, 0.7);
+            color: #ffffff;
+            font-size: 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            /* Force LTR for select content */
+            direction: ltr;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #9d4edd;
+            box-shadow: 0 0 15px rgba(157, 78, 221, 0.3);
+        }
+
+        select:hover {
+            background: rgba(157, 78, 221, 0.2);
+        }
+
+        .time-select::after {
+            content: '▼';
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #9d4edd;
+            pointer-events: none;
+            font-size: 12px;
+        }
+
+        .time-separator {
+            color: #c77dff;
+            font-size: 20px;
+            font-weight: bold;
+            margin: 0 5px;
+        }
+
+        .calculate-btn {
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(45deg, #9d4edd, #c77dff);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 25px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(157, 78, 221, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results {
+            background: rgba(199, 125, 255, 0.1);
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border: 2px solid rgba(199, 125, 255, 0.3);
+            display: none;
+        }
+
+        .results.show {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: rgba(157, 78, 221, 0.1);
+            border-radius: 8px;
+        }
+
+        .result-label {
+            color: #e0aaff;
+            font-weight: 500;
+        }
+
+        .result-value {
+            color: #ffffff;
+            font-weight: bold;
+            font-size: 1.1em;
+            /* Keep numbers LTR in Arabic */
+            direction: ltr;
+        }
+
+        .remaining-hours {
+            font-size: 1.5em !important;
+            color: #9d4edd !important;
+        }
+
+        .leave-time {
+            font-size: 1.3em !important;
+            color: #c77dff !important;
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .action-btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+        .save-btn {
+            background: linear-gradient(45deg, #7209b7, #9d4edd);
+            color: white;
+        }
+
+        .share-btn {
+            background: linear-gradient(45deg, #25D366, #128C7E);
+            color: white;
+        }
+
+        .image-btn {
+            background: linear-gradient(45deg, #FF6B6B, #EE5A24);
+            color: white;
+        }
+
+        .copy-btn {
+            background: linear-gradient(45deg, #3742fa, #5352ed);
+            color: white;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .hidden-canvas {
+            position: absolute;
+            left: -9999px;
+            top: -9999px;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #9d4edd;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 10px;
+            font-weight: bold;
+            opacity: 0;
+            transform: translateX(300px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .notification.show {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .rtl .notification {
+            right: auto;
+            left: 20px;
+            transform: translateX(-300px);
+        }
+
+        .rtl .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                margin: 10px;
+                padding: 20px;
+            }
+            
+            .action-buttons {
+                grid-template-columns: 1fr;
+            }
+
+            .controls-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .language-toggle, .shift-toggle {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="controls-row">
+            <div class="language-toggle">
+                <button class="lang-btn active" onclick="setLanguage('en')">English</button>
+                <button class="lang-btn" onclick="setLanguage('ar')">العربية</button>
+            </div>
+            <div class="shift-toggle">
+                <button class="shift-btn active" onclick="setShift('morning')" data-en="🌅 Morning" data-ar="🌅 صباحي">🌅 Morning</button>
+                <button class="shift-btn" onclick="setShift('evening')" data-en="🌆 Evening" data-ar="🌆 مسائي">🌆 Evening</button>
+            </div>
+        </div>
+
+        <div class="header">
+            <h1 data-en="⏰ WorksTime" data-ar="⏰ أوقات العمل">⏰ WorksTime</h1>
+            <p data-en="Professional Hours Tracker" data-ar="متتبع ساعات العمل المهني">Professional Hours Tracker</p>
+        </div>
+
+        <div class="work-schedule">
+            <h3 data-en="📅 Work Schedule" data-ar="📅 جدول العمل">📅 Work Schedule</h3>
+            <div class="schedule-time" id="scheduleDisplay">
+                <span data-en="Start:" data-ar="البداية:">Start:</span> <span id="startTime">7:15 AM</span> | 
+                <span data-en="End:" data-ar="النهاية:">End:</span> <span id="endTime">3:15 PM</span><br>
+                <span data-en="Daily Hours:" data-ar="الساعات اليومية:">Daily Hours:</span> <span id="dailyHours">8 hours</span>
+            </div>
+            <div class="shift-info">
+                <span data-en="Monthly Total:" data-ar="المجموع الشهري:">Monthly Total:</span>
+                <span style="color: #9d4edd; font-weight: bold;">22 hours</span>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label for="employeeName" data-en="👤 Employee Name (Optional)" data-ar="👤 اسم الموظف (اختياري)">👤 Employee Name (Optional)</label>
+            <input type="text" id="employeeName" data-en-placeholder="Enter your name (optional)" data-ar-placeholder="أدخل اسمك (اختياري)" placeholder="Enter your name (optional)">
+        </div>
+
+        <div class="input-group">
+            <label data-en="⏱️ Used Hours" data-ar="⏱️ الساعات المستخدمة">⏱️ Used Hours</label>
+            <div class="time-inputs">
+                <div class="time-select">
+                    <select id="usedHours">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                    </select>
+                </div>
+                <span class="time-separator">:</span>
+                <div class="time-select">
+                    <select id="usedMinutes">
+                        <option value="0">00</option>
+                        <option value="1">01</option>
+                        <option value="2">02</option>
+                        <option value="3">03</option>
+                        <option value="4">04</option>
+                        <option value="5">05</option>
+                        <option value="6">06</option>
+                        <option value="7">07</option>
+                        <option value="8">08</option>
+                        <option value="9">09</option>
+                        <option value="10">10</option>
+                        <option value="11">11</option>
+                        <option value="12">12</option>
+                        <option value="13">13</option>
+                        <option value="14">14</option>
+                        <option value="15">15</option>
+                        <option value="16">16</option>
+                        <option value="17">17</option>
+                        <option value="18">18</option>
+                        <option value="19">19</option>
+                        <option value="20">20</option>
+                        <option value="21">21</option>
+                        <option value="22">22</option>
+                        <option value="23">23</option>
+                        <option value="24">24</option>
+                        <option value="25">25</option>
+                        <option value="26">26</option>
+                        <option value="27">27</option>
+                        <option value="28">28</option>
+                        <option value="29">29</option>
+                        <option value="30">30</option>
+                        <option value="31">31</option>
+                        <option value="32">32</option>
+                        <option value="33">33</option>
+                        <option value="34">34</option>
+                        <option value="35">35</option>
+                        <option value="36">36</option>
+                        <option value="37">37</option>
+                        <option value="38">38</option>
+                        <option value="39">39</option>
+                        <option value="40">40</option>
+                        <option value="41">41</option>
+                        <option value="42">42</option>
+                        <option value="43">43</option>
+                        <option value="44">44</option>
+                        <option value="45">45</option>
+                        <option value="46">46</option>
+                        <option value="47">47</option>
+                        <option value="48">48</option>
+                        <option value="49">49</option>
+                        <option value="50">50</option>
+                        <option value="51">51</option>
+                        <option value="52">52</option>
+                        <option value="53">53</option>
+                        <option value="54">54</option>
+                        <option value="55">55</option>
+                        <option value="56">56</option>
+                        <option value="57">57</option>
+                        <option value="58">58</option>
+                        <option value="59">59</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button class="calculate-btn" onclick="calculateResults()" data-en="🧮 Calculate Results" data-ar="🧮 احسب النتائج">
+            🧮 Calculate Results
+        </button>
+
+        <div class="results" id="results">
+            <div class="result-item">
+                <span class="result-label" data-en="🎯 Remaining Hours:" data-ar="🎯 الساعات المتبقية:">🎯 Remaining Hours:</span>
+                <span class="result-value remaining-hours" id="remainingHours">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label" data-en="🚪 Can Leave At:" data-ar="🚪 يمكن المغادرة في:">🚪 Can Leave At:</span>
+                <span class="result-value leave-time" id="leaveTime">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label" data-en="📊 Hours Used:" data-ar="📊 الساعات المستخدمة:">📊 Hours Used:</span>
+                <span class="result-value" id="hoursUsed">-</span>
+            </div>
+            <div class="result-item">
+                <span class="result-label" data-en="💼 Total Work Hours:" data-ar="💼 إجمالي ساعات العمل:">💼 Total Work Hours:</span>
+                <span class="result-value">22:00</span>
+            </div>
+
+            <div class="action-buttons">
+                <button class="action-btn save-btn" onclick="saveResults()" data-en="💾 Save" data-ar="💾 حفظ">💾 Save</button>
+                <button class="action-btn share-btn" onclick="shareWhatsApp()" data-en="📱 WhatsApp" data-ar="📱 واتساب">📱 WhatsApp</button>
+                <button class="action-btn image-btn" onclick="saveAsImage()" data-en="📸 Save Image" data-ar="📸 حفظ صورة">📸 Save Image</button>
+                <button class="action-btn copy-btn" onclick="copyResults()" data-en="📋 Copy" data-ar="📋 نسخ">📋 Copy</button>
+            </div>
+        </div>
+    </div>
+
+    <canvas id="canvas" class="hidden-canvas"></canvas>
+    <div id="notification" class="notification"></div>
+
+    <!-- Audio elements for sounds -->
+    <audio id="clickSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfJ3+8=" type="audio/wav">
+    </audio>
+    
+    <audio id="inputSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRp4CAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YXoCAAC4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4uLi4" type="audio/wav">
+    </audio>
+
+    <audio id="resultSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRu4CAABXQVZFZm10IBAAAAABAAEAVFYAAKhWAQACABAAZGF0YcoCAADn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn5+fn" type="audio/wav">
+    </audio>
+
+    <audio id="dropdownSound" preload="auto">
+        <source src="data:audio/wav;base64,UklGRtIBAABXQVZFZm10IBAAAAABAAIAESsAAFVWAAAEABAAZGF0YbIBAABBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFAlF" type="audio/wav">
+    </audio>
+
+    <script>
+        let currentLanguage = 'en';
+        let currentShift = 'morning'; // Default shift
+        let currentResults = {};
+
+        // Shift configurations
+        const shifts = {
+            morning: {
+                startTime: '7:15 AM',
+                endTime: '3:15 PM',
+                dailyHours: 8,
+                startHour: 7,
+                startMinute: 15,
+                endHour: 15,
+                endMinute: 15
+            },
+            evening: {
+                startTime: '1:00 PM',
+                endTime: '7:00 PM',
+                dailyHours: 6,
+                startHour: 13,
+                startMinute: 0,
+                endHour: 19,
+                endMinute: 0
+            }
+        };
+
+        // Language switching
+        function setLanguage(lang) {
+            currentLanguage = lang;
+            
+            // Update active button
+            document.querySelectorAll('.lang-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Toggle RTL
+            if (lang === 'ar') {
+                document.body.classList.add('rtl');
+            } else {
+                document.body.classList.remove('rtl');
+            }
+            
+            // Update all text elements
+            document.querySelectorAll('[data-' + lang + ']').forEach(element => {
+                element.textContent = element.getAttribute('data-' + lang);
+            });
+            
+            // Update placeholders
+            document.querySelectorAll('[data-' + lang + '-placeholder]').forEach(element => {
+                element.placeholder = element.getAttribute('data-' + lang + '-placeholder');
+            });
+            
+            playSound('clickSound');
+        }
+
+        // Shift switching
+        function setShift(shift) {
+            currentShift = shift;
+            
+            // Update active button
+            document.querySelectorAll('.shift-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            // Update schedule display
+            const shiftData = shifts[shift];
+            document.getElementById('startTime').textContent = shiftData.startTime;
+            document.getElementById('endTime').textContent = shiftData.endTime;
+            document.getElementById('dailyHours').textContent = `${shiftData.dailyHours} hours`;
+            
+            // Recalculate if results are showing
+            if (document.getElementById('results').classList.contains('show')) {
+                calculateResults();
+            }
+            
+            playSound('clickSound');
+        }
+
+        // Sound functions
+        function playSound(soundId) {
+            const audio = document.getElementById(soundId);
+            if (audio) {
+                audio.currentTime = 0;
+                audio.play().catch(e => console.log('Audio play failed:', e));
+            }
+        }
+
+        // Add event listeners for sounds
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputs = document.querySelectorAll('input[type="text"]');
+            inputs.forEach(input => {
+                input.addEventListener('focus', () => playSound('inputSound'));
+                input.addEventListener('input', () => playSound('inputSound'));
+            });
+
+            const selects = document.querySelectorAll('select');
+            selects.forEach(select => {
+                select.addEventListener('change', () => playSound('dropdownSound'));
+                select.addEventListener('focus', () => playSound('inputSound'));
+            });
+
+            const buttons = document.querySelectorAll('button');
+            buttons.forEach(button => {
+                button.addEventListener('click', () => playSound('clickSound'));
+            });
+        });
+
+        function calculateResults() {
+            const usedHours = parseInt(document.getElementById('usedHours').value) || 0;
+            const usedMinutes = parseInt(document.getElementById('usedMinutes').value) || 0;
+            
+            // Convert total used time to minutes
+            const totalUsedMinutes = (usedHours * 60) + usedMinutes;
+            const totalWorkMinutes = 22 * 60; // 22 hours monthly for both shifts
+            
+            // Calculate remaining minutes
+            const remainingMinutes = totalWorkMinutes - totalUsedMinutes;
+            
+            // Convert back to hours and minutes
+            const remainingHours = Math.floor(remainingMinutes / 60);
+            const remainingMins = remainingMinutes % 60;
+            
+            // Get current shift data
+            const shiftData = shifts[currentShift];
+            
+            // Calculate leave time by subtracting remaining time from work end time
+            let leaveTimeMinutes = (shiftData.endHour * 60 + shiftData.endMinute) - remainingMinutes;
+            
+            // Convert back to hours and minutes
+            let finalLeaveHour = Math.floor(leaveTimeMinutes / 60);
+            let finalLeaveMinute = leaveTimeMinutes % 60;
+            
+            // Handle negative minutes
+            if (finalLeaveMinute < 0) {
+                finalLeaveHour -= 1;
+                finalLeaveMinute += 60;
+            }
+            
+            // Don't allow leaving before work start or after work end
+            if (finalLeaveHour < shiftData.startHour || 
+                (finalLeaveHour === shiftData.startHour && finalLeaveMinute < shiftData.startMinute)) {
+                finalLeaveHour = shiftData.startHour;
+                finalLeaveMinute = shiftData.startMinute;
+            }
+            if (finalLeaveHour > shiftData.endHour || 
+                (finalLeaveHour === shiftData.endHour && finalLeaveMinute > shiftData.endMinute)) {
+                finalLeaveHour = shiftData.endHour;
+                finalLeaveMinute = shiftData.endMinute;
+            }
+            
+            // Format time
+            const formatTime = (hours, minutes) => {
+                const period = hours >= 12 ? 'PM' : 'AM';
+                const displayHour = hours > 12 ? hours - 12 : (hours === 0 ? 12 : hours);
+                return `${displayHour}:${minutes.toString().padStart(2, '0')} ${period}`;
+            };
+            
+            // Update display
+            document.getElementById('remainingHours').textContent = 
+                `${remainingHours}:${remainingMins.toString().padStart(2, '0')}`;
+            document.getElementById('leaveTime').textContent = 
+                formatTime(finalLeaveHour, finalLeaveMinute);
+            document.getElementById('hoursUsed').textContent = 
+                `${usedHours}:${usedMinutes.toString().padStart(2, '0')}`;
+            
+            // Store results for sharing
+            const shiftName = currentShift === 'morning' ? 
+                (currentLanguage === 'ar' ? 'الصباحي' : 'Morning') : 
+                (currentLanguage === 'ar' ? 'المسائي' : 'Evening');
+            
+            currentResults = {
+                name: document.getElementById('employeeName').value.trim(),
+                shift: shiftName,
+                usedHours: `${usedHours}:${usedMinutes.toString().padStart(2, '0')}`,
+                remainingHours: `${remainingHours}:${remainingMins.toString().padStart(2, '0')}`,
+                leaveTime: formatTime(finalLeaveHour, finalLeaveMinute),
+                totalHours: '22:00'
+            };
+            
+            // Show results
+            document.getElementById('results').classList.add('show');
+            
+            // Play result sound
+            playSound('resultSound');
+        }
+
+        function saveResults() {
+            const data = {
+                timestamp: new Date().toISOString(),
+                ...currentResults
+            };
+            
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `workstime-${currentShift}-${new Date().toISOString().split('T')[0]}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            const message = currentLanguage === 'ar' ? 'تم حفظ النتائج بنجاح!' : 'Results saved successfully!';
+            showNotification(message);
+        }
+
+        function shareWhatsApp() {
+            const name = currentResults.name ? `👤 ${currentResults.name}\n` : '';
+            const labels = currentLanguage === 'ar' ? {
+                title: '⏰ *تقرير أوقات العمل*',
+                summary: '📊 *ملخص العمل:*',
+                shift: '• الوردية',
+                used: '• الساعات المستخدمة',
+                remaining: '• المتبقي',
+                leave: '• يمكن المغادرة في',
+                total: '• إجمالي ساعات العمل',
+                generated: '📅 تم الإنشاء'
+            } : {
+                title: '⏰ *WorksTime Report*',
+                summary: '📊 *Work Summary:*',
+                shift: '• Shift',
+                used: '• Used Hours',
+                remaining: '• Remaining',
+                leave: '• Can Leave At',
+                total: '• Total Work Hours',
+                generated: '📅 Generated'
+            };
+            
+            const message = `${labels.title}\n\n${name}${labels.summary}\n` +
+                `${labels.shift}: ${currentResults.shift}\n` +
+                `${labels.used}: ${currentResults.usedHours}\n` +
+                `${labels.remaining}: ${currentResults.remainingHours}\n` +
+                `${labels.leave}: ${currentResults.leaveTime}\n` +
+                `${labels.total}: ${currentResults.totalHours}\n\n` +
+                `${labels.generated}: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+            
+            const url = `https://wa.me/?text=${encodeURIComponent(message)}`;
+            window.open(url, '_blank');
+        }
+
+        function copyResults() {
+            const name = currentResults.name ? `Employee: ${currentResults.name}\n` : '';
+            const labels = currentLanguage === 'ar' ? {
+                title: 'تقرير أوقات العمل',
+                shift: 'الوردية',
+                used: 'الساعات المستخدمة',
+                remaining: 'الساعات المتبقية',
+                leave: 'يمكن المغادرة في',
+                total: 'إجمالي ساعات العمل',
+                generated: 'تم الإنشاء'
+            } : {
+                title: 'WorksTime Report',
+                shift: 'Shift',
+                used: 'Used Hours',
+                remaining: 'Remaining Hours',
+                leave: 'Can Leave At',
+                total: 'Total Work Hours',
+                generated: 'Generated'
+            };
+            
+            const text = `${labels.title}\n\n${name}${labels.shift}: ${currentResults.shift}\n` +
+                `${labels.used}: ${currentResults.usedHours}\n` +
+                `${labels.remaining}: ${currentResults.remainingHours}\n` +
+                `${labels.leave}: ${currentResults.leaveTime}\n` +
+                `${labels.total}: ${currentResults.totalHours}\n\n` +
+                `${labels.generated}: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+            
+            navigator.clipboard.writeText(text).then(() => {
+                const message = currentLanguage === 'ar' ? 'تم نسخ النتائج إلى الحافظة!' : 'Results copied to clipboard!';
+                showNotification(message);
+            }).catch(() => {
+                const message = currentLanguage === 'ar' ? 'فشل في نسخ النتائج' : 'Failed to copy results';
+                showNotification(message);
+            });
+        }
+
+        function saveAsImage() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Set canvas size
+            canvas.width = 600;
+            canvas.height = 450;
+            
+            // Create gradient background
+            const gradient = ctx.createLinearGradient(0, 0, 600, 450);
+            gradient.addColorStop(0, '#2d1b69');
+            gradient.addColorStop(1, '#11071f');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, 600, 450);
+            
+            // Add border
+            ctx.strokeStyle = '#9d4edd';
+            ctx.lineWidth = 3;
+            ctx.strokeRect(10, 10, 580, 430);
+            
+            // Title
+            ctx.fillStyle = '#9d4edd';
+            ctx.font = 'bold 28px Arial';
+            ctx.textAlign = 'center';
+            const title = currentLanguage === 'ar' ? '⏰ تقرير أوقات العمل' : '⏰ WorksTime Report';
+            ctx.fillText(title, 300, 60);
+            
+            // Employee name if provided
+            let yPos = 100;
+            if (currentResults.name) {
+                ctx.fillStyle = '#c77dff';
+                ctx.font = '20px Arial';
+                ctx.fillText(`👤 ${currentResults.name}`, 300, yPos);
+                yPos += 40;
+            }
+            
+            // Results
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '18px Arial';
+            ctx.textAlign = currentLanguage === 'ar' ? 'right' : 'left';
+            const xPos = currentLanguage === 'ar' ? 550 : 50;
+            
+            const shiftLabel = currentLanguage === 'ar' ? 'الوردية' : 'Shift';
+            const results = currentLanguage === 'ar' ? [
+                `🔄 ${shiftLabel}: ${currentResults.shift}`,
+                `📊 الساعات المستخدمة: ${currentResults.usedHours}`,
+                `🎯 الساعات المتبقية: ${currentResults.remainingHours}`,
+                `🚪 يمكن المغادرة في: ${currentResults.leaveTime}`,
+                `💼 إجمالي ساعات العمل: ${currentResults.totalHours}`
+            ] : [
+                `🔄 ${shiftLabel}: ${currentResults.shift}`,
+                `📊 Used Hours: ${currentResults.usedHours}`,
+                `🎯 Remaining Hours: ${currentResults.remainingHours}`,
+                `🚪 Can Leave At: ${currentResults.leaveTime}`,
+                `💼 Total Work Hours: ${currentResults.totalHours}`
+            ];
+            
+            results.forEach((result, index) => {
+                ctx.fillText(result, xPos, yPos + (index * 35));
+            });
+            
+            // Date
+            ctx.fillStyle = '#e0aaff';
+            ctx.font = '14px Arial';
+            ctx.textAlign = 'center';
+            const dateLabel = currentLanguage === 'ar' ? 'تم الإنشاء' : 'Generated';
+            ctx.fillText(`${dateLabel}: ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`, 300, 400);
+            
+            // Download image
+            canvas.toBlob((blob) => {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `workstime-${currentShift}-report-${new Date().toISOString().split('T')[0]}.png`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                const message = currentLanguage === 'ar' ? 'تم حفظ الصورة بنجاح!' : 'Image saved successfully!';
+                showNotification(message);
+            });
+        }
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            notification.textContent = message;
+            notification.classList.add('show');
+            
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        // Auto-calculate on input change
+        document.getElementById('usedHours').addEventListener('change', () => {
+            if (document.getElementById('results').classList.contains('show')) {
+                calculateResults();
+            }
+        });
+
+        document.getElementById('usedMinutes').addEventListener('change', () => {
+            if (document.getElementById('results').classList.contains('show')) {
+                calculateResults();
+            }
+        });
+
+        // Enter key support
+        document.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                calculateResults();
+            }
+        });
+    </script>
+</body>
+</html>
