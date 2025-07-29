@@ -53,8 +53,14 @@
             margin-bottom: 20px;
         }
 
-        .language-toggle, .shift-toggle {
+        .language-toggle {
             display: flex;
+            gap: 5px;
+        }
+
+        .shift-toggle {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
             gap: 5px;
         }
 
@@ -62,12 +68,13 @@
             background: rgba(157, 78, 221, 0.2);
             border: 2px solid rgba(157, 78, 221, 0.5);
             color: #c77dff;
-            padding: 8px 15px;
+            padding: 8px 12px;
             border-radius: 8px;
             cursor: pointer;
             transition: all 0.3s ease;
-            font-size: 14px;
+            font-size: 12px;
             white-space: nowrap;
+            text-align: center;
         }
 
         .lang-btn.active, .shift-btn.active {
@@ -374,8 +381,13 @@
                 gap: 10px;
             }
 
-            .language-toggle, .shift-toggle {
+            .language-toggle {
                 justify-content: center;
+            }
+
+            .shift-toggle {
+                grid-template-columns: 1fr 1fr;
+                gap: 5px;
             }
         }
     </style>
@@ -390,6 +402,8 @@
             <div class="shift-toggle">
                 <button class="shift-btn active" onclick="setShift('morning')" data-en="🌅 Morning" data-ar="🌅 صباحي">🌅 Morning</button>
                 <button class="shift-btn" onclick="setShift('evening')" data-en="🌆 Evening" data-ar="🌆 مسائي">🌆 Evening</button>
+                <button class="shift-btn" onclick="setShift('maintenance')" data-en="🔧 School Maintenance" data-ar="🔧 صيانة مدارس">🔧 School Maintenance</button>
+                <button class="shift-btn" onclick="setShift('kindergarten')" data-en="🎈 Kindergarten" data-ar="🎈 الروضة">🎈 Kindergarten</button>
             </div>
         </div>
 
@@ -550,7 +564,7 @@
 
     <!-- Audio elements for sounds -->
     <audio id="clickSound" preload="auto">
-        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfJ3+8=" type="audio/wav">
+        <source src="data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfE9t2QQQsUXrTp66hUFApGn+DyvmEYBjiQ2O/TgTAHKnfJ3+8=" type="audio/wav">
     </audio>
     
     <audio id="inputSound" preload="auto">
@@ -588,6 +602,24 @@
                 startHour: 13,
                 startMinute: 0,
                 endHour: 19,
+                endMinute: 0
+            },
+            maintenance: {
+                startTime: '2:00 PM',
+                endTime: '9:00 PM',
+                dailyHours: 7,
+                startHour: 14,
+                startMinute: 0,
+                endHour: 21,
+                endMinute: 0
+            },
+            kindergarten: {
+                startTime: '7:00 AM',
+                endTime: '1:00 PM',
+                dailyHours: 6,
+                startHour: 7,
+                startMinute: 0,
+                endHour: 13,
                 endMinute: 0
             }
         };
@@ -677,7 +709,7 @@
             
             // Convert total used time to minutes
             const totalUsedMinutes = (usedHours * 60) + usedMinutes;
-            const totalWorkMinutes = 22 * 60; // 22 hours monthly for both shifts
+            const totalWorkMinutes = 22 * 60; // 22 hours monthly for all shifts
             
             // Calculate remaining minutes
             const remainingMinutes = totalWorkMinutes - totalUsedMinutes;
@@ -730,13 +762,19 @@
                 `${usedHours}:${usedMinutes.toString().padStart(2, '0')}`;
             
             // Store results for sharing
-            const shiftName = currentShift === 'morning' ? 
-                (currentLanguage === 'ar' ? 'الصباحي' : 'Morning') : 
-                (currentLanguage === 'ar' ? 'المسائي' : 'Evening');
+            const getShiftName = () => {
+                const shiftNames = {
+                    morning: currentLanguage === 'ar' ? 'الصباحي' : 'Morning',
+                    evening: currentLanguage === 'ar' ? 'المسائي' : 'Evening',
+                    maintenance: currentLanguage === 'ar' ? 'صيانة مدارس' : 'School Maintenance',
+                    kindergarten: currentLanguage === 'ar' ? 'الروضة' : 'Kindergarten'
+                };
+                return shiftNames[currentShift];
+            };
             
             currentResults = {
                 name: document.getElementById('employeeName').value.trim(),
-                shift: shiftName,
+                shift: getShiftName(),
                 usedHours: `${usedHours}:${usedMinutes.toString().padStart(2, '0')}`,
                 remainingHours: `${remainingHours}:${remainingMins.toString().padStart(2, '0')}`,
                 leaveTime: formatTime(finalLeaveHour, finalLeaveMinute),
